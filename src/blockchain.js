@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 const initBlock = {
   index: 0,
-  data: 'Hello heqi-chain!',
+  data: 'Hello heqi-chain!',  // pendingTransactions
   prevHash: '0',
   timestamp: 1544792455313,
   nonce: 4250,
@@ -12,7 +12,7 @@ const initBlock = {
 class Blockchain {
   constructor () {
     this.blockchain = [initBlock];
-    // this.data = [];
+    this.data = [];
     this.difficulty = 3;
     // const hash = this.computedHash(0, '0', Date.now(), 'Hello heqi-chain!', 1);
   }
@@ -21,11 +21,18 @@ class Blockchain {
     return this.blockchain[this.blockchain.length - 1];
   }
 
-  mine() {
+  transfer(from, to, amount) {
+    const transObj = { from, to, amount };
+    this.data.push(transObj);
+    return transObj;
+  }
+
+  mine(miningRewardAddress) {
     const newBlock = this.generateNewBlock();
 
     if (this.isVaildBlock(newBlock) && this.isVaildChain()) {
       this.blockchain.push(newBlock);
+      this.transfer('0', miningRewardAddress, 20); // 矿工奖励, 不应该在这里加的啊
       return newBlock;
     } else {
       console.log('error, invalid block.');
@@ -35,7 +42,7 @@ class Blockchain {
   generateNewBlock() {
     let nonce = 0;
     const index = this.blockchain.length;
-    const data = 'Hello heqi-chain!';
+    const data = this.data;
     const prevHash = this.getLastBlock().hash;
     const timestamp = Date.now();
     let hash = this.computedHash(index, prevHash, timestamp, data, nonce);

@@ -13,7 +13,7 @@ function formatLog(data) {
   });
 
   const res = data.map(obj => {
-    return head.map(key => obj[key])
+    return head.map(key => JSON.stringify(obj[key], null, 1));
   })
 
   table.push(...res);
@@ -23,9 +23,9 @@ function formatLog(data) {
 
 const blockchain = new Blockchain();
 
-vorpal.command('mine', '挖矿')
+vorpal.command('mine <miningRewardAddress>', '挖矿')
       .action(function(args, cb) {
-        const newBlock = blockchain.mine();
+        const newBlock = blockchain.mine(args.miningRewardAddress);
         if (newBlock) {
           formatLog(newBlock);
         }
@@ -37,6 +37,21 @@ vorpal.command('chain', '查看区块链')
   formatLog(blockchain.blockchain);
   cb();
 });
+
+vorpal.command('trans <from> <to> <amount>', '转账')
+      .action(function(args, cb) {
+        let trans = blockchain.transfer(args.from, args.to, args.amount);
+        formatLog(trans);
+        cb();
+      })
+
+
+vorpal.command('detail <index>', '查看区块详情')
+      .action(function(args, cb) {
+        const block = blockchain.blockchain[args.index];
+        console.log(JSON.stringify(block, null, 2));
+        cb();
+      });
 
 vorpal.delimiter("heqi-chain =>")
 .show();      
