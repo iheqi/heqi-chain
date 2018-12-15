@@ -1,6 +1,7 @@
 const vorpal = require('vorpal')();
 const Blockchain = require('./blockchain');
 const Table = require('cli-table');
+const rsa = require('./rsa');
 
 function formatLog(data) {
   if (!Array.isArray(data)) {
@@ -23,9 +24,9 @@ function formatLog(data) {
 
 const blockchain = new Blockchain();
 
-vorpal.command('mine <miningRewardAddress>', '挖矿')
+vorpal.command('mine', '挖矿')
       .action(function(args, cb) {
-        const newBlock = blockchain.mine(args.miningRewardAddress);
+        const newBlock = blockchain.mine(rsa.keys.pub);
         if (newBlock) {
           formatLog(newBlock);
         }
@@ -38,9 +39,10 @@ vorpal.command('chain', '查看区块链')
         cb();
       });
 
-vorpal.command('trans <from> <to> <amount>', '转账')
+vorpal.command('trans <to> <amount>', '转账')
       .action(function(args, cb) {
-        let trans = blockchain.transfer(args.from, args.to, args.amount);
+        // 默认本地公钥为转出地址了
+        let trans = blockchain.transfer(rsa.keys.pub, args.to, args.amount);
         if (trans) {
           formatLog(trans);
         }
@@ -59,8 +61,13 @@ vorpal.command('blance <address>', '查看余额')
         const blance = blockchain.getBalanceOfAddress(args.address);
         formatLog({address: args.address, blance});
         cb();
-      });      
+      });   
 
+vorpal.command('pub', '查看本地公钥')
+      .action(function(args, cb) {
+        console.log(rsa.keys.pub);
+        cb();
+      });  
 vorpal.delimiter("heqi-chain =>")
 .show();      
 

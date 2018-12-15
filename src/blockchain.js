@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const rsa = require('./rsa');
 
 const initBlock = {
   index: 0,
@@ -9,15 +10,15 @@ const initBlock = {
   hash: '00049946ecd84533d70ae601208c45aebcc0f6ef19482e55b46f131ddb1693f1'
 }
 
-class Block {
-	constructor(timestamp, transactions, previousHash = '') {
-		this.previousHash = previousHash;
-		this.timestamp = timestamp;
-		this.transactions = transactions;
-		this.nonce = 0;
-		this.hash = this.calculateHash();
-  }
-}
+// class Block {
+// 	constructor(timestamp, transactions, previousHash = '') {
+// 		this.previousHash = previousHash;
+// 		this.timestamp = timestamp;
+// 		this.transactions = transactions;
+// 		this.nonce = 0;
+// 		this.hash = this.calculateHash();
+//   }
+// }
 
 class Blockchain {
   constructor () {
@@ -40,17 +41,29 @@ class Blockchain {
       }
     }
     const transObj = { from, to, amount };
+    const sig = rsa.sign(transObj);
+    transObj.sig = sig;
     this.data.push(transObj);
     return transObj;
+  }
+
+  isVaildTrans(trans) {
+    return rsa.verify(trans, trans.from)
   }
 
   mine(miningRewardAddress) {
     const newBlock = this.generateNewBlock();
 
+    // if (!this.data.every(val => isVaildTrans(val))) {
+    //   return false;
+    // }
+
+    this.data = this.data.filter(val => isVaildTrans(val)); // 过滤不合法的2
+
     if (this.isVaildBlock(newBlock) && this.isVaildChain()) {
       this.blockchain.push(newBlock);
       this.data = [];
-      this.transfer('0', miningRewardAddress, 20); // 矿工奖励, 不应该在这里加的啊
+      this.transfer('0', miningRewardAddress, 20); // 矿工奖励,视频是先加奖励了再清空，错了
       return newBlock;
     } else {
       console.log('error, invalid block.');
@@ -83,14 +96,6 @@ class Blockchain {
       nonce++;
       hash = this.computedHash(index, prevHash, timestamp, data, nonce);
     }
-    // console.log({
-    //   hash,
-    //   nonce,
-    //   timestamp,
-    //   prevHash,
-    //   data,
-    //   index
-    // });
 
     return {
       hash,

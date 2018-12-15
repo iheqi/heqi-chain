@@ -67,10 +67,16 @@ const transFalse = {
 
 const keys = generateKeys();
 
-const signature = sign(trans);
-trans.signature = signature;
-transFalse.signature = signature;
-// console.log('signature', signature);
+module.exports = {
+  sign,
+  verify,
+  keys
+}
 
-console.log(verify(trans, keys.pub));
-console.log(verify(transFalse, keys.pub));
+// const signature = sign(trans);
+// trans.signature = signature;
+// transFalse.signature = signature;
+// // console.log('signature', signature);
+
+// console.log(verify(trans, keys.pub));
+// console.log(verify(transFalse, keys.pub));
