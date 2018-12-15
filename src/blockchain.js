@@ -26,6 +26,7 @@ class Blockchain {
 
     if (this.isVaildBlock(newBlock) && this.isVaildChain()) {
       this.blockchain.push(newBlock);
+      return newBlock;
     } else {
       console.log('error, invalid block.');
     }
@@ -43,14 +44,14 @@ class Blockchain {
       nonce++;
       hash = this.computedHash(index, prevHash, timestamp, data, nonce);
     }
-    console.log({
-      hash,
-      nonce,
-      timestamp,
-      prevHash,
-      data,
-      index
-    });
+    // console.log({
+    //   hash,
+    //   nonce,
+    //   timestamp,
+    //   prevHash,
+    //   data,
+    //   index
+    // });
 
     return {
       hash,
@@ -101,9 +102,11 @@ class Blockchain {
   }
 }
 
-let bc = new Blockchain();
-bc.mine();
-bc.mine();
-bc.blockchain[1].index = 100;
-bc.mine();
-bc.mine();
+module.exports = Blockchain;
+
+// let bc = new Blockchain();
+// bc.mine();
+// bc.mine();
+// bc.blockchain[1].index = 100;
+// bc.mine();
+// bc.mine();
