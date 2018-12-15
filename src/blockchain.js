@@ -9,6 +9,16 @@ const initBlock = {
   hash: '00049946ecd84533d70ae601208c45aebcc0f6ef19482e55b46f131ddb1693f1'
 }
 
+class Block {
+	constructor(timestamp, transactions, previousHash = '') {
+		this.previousHash = previousHash;
+		this.timestamp = timestamp;
+		this.transactions = transactions;
+		this.nonce = 0;
+		this.hash = this.calculateHash();
+  }
+}
+
 class Blockchain {
   constructor () {
     this.blockchain = [initBlock];
@@ -22,6 +32,13 @@ class Blockchain {
   }
 
   transfer(from, to, amount) {
+    if (from !== '0') {
+      const blance = this.getBalanceOfAddress(from);
+      if (blance < amount) {
+        console.log('not enough', from, blance, amount);
+        return false;
+      }
+    }
     const transObj = { from, to, amount };
     this.data.push(transObj);
     return transObj;
@@ -32,13 +49,28 @@ class Blockchain {
 
     if (this.isVaildBlock(newBlock) && this.isVaildChain()) {
       this.blockchain.push(newBlock);
+      this.data = [];
       this.transfer('0', miningRewardAddress, 20); // 矿工奖励, 不应该在这里加的啊
       return newBlock;
     } else {
       console.log('error, invalid block.');
     }
   }
-
+	getBalanceOfAddress(address) { // 查询余额
+		let blance = 0;
+		for (var i = 0; i < this.blockchain.length; i++) {
+      const block = this.blockchain[i];
+			for (const trans of block.data) {
+				if (address === trans.to) {
+					blance += trans.amount;
+				}				
+				if (address === trans.from) {
+					blance -= trans.amount;
+				}
+			}
+		}
+		return blance;
+	}
   generateNewBlock() {
     let nonce = 0;
     const index = this.blockchain.length;

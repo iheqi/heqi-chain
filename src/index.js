@@ -33,18 +33,19 @@ vorpal.command('mine <miningRewardAddress>', '挖矿')
       });
 
 vorpal.command('chain', '查看区块链')
-.action(function(args, cb) {
-  formatLog(blockchain.blockchain);
-  cb();
-});
+      .action(function(args, cb) {
+        formatLog(blockchain.blockchain);
+        cb();
+      });
 
 vorpal.command('trans <from> <to> <amount>', '转账')
       .action(function(args, cb) {
         let trans = blockchain.transfer(args.from, args.to, args.amount);
-        formatLog(trans);
+        if (trans) {
+          formatLog(trans);
+        }
         cb();
       })
-
 
 vorpal.command('detail <index>', '查看区块详情')
       .action(function(args, cb) {
@@ -52,6 +53,13 @@ vorpal.command('detail <index>', '查看区块详情')
         console.log(JSON.stringify(block, null, 2));
         cb();
       });
+
+vorpal.command('blance <address>', '查看余额')
+      .action(function(args, cb) {
+        const blance = blockchain.getBalanceOfAddress(args.address);
+        formatLog({address: args.address, blance});
+        cb();
+      });      
 
 vorpal.delimiter("heqi-chain =>")
 .show();      
