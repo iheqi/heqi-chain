@@ -20,7 +20,7 @@ class Block {
       this.hash = this.computedHash(this);
     }    
   }
-
+  
   computedHash({index, prevHash, timestamp, data, nonce}) {
     return crypto.createHash('sha256')
                  .update(index + prevHash + timestamp + data + nonce)

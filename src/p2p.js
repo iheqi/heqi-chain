@@ -1,4 +1,7 @@
 const dgram = require('dgram');
+const Blockchain = require('./blockchain');
+
+const blockchain = new Blockchain();
 
 class P2p {
   constructor() {
@@ -58,20 +61,31 @@ class P2p {
   dispatch(action, remote) {
     switch (action.type) {
       case 'newpeer': {
+        // 1
         this.send({
           type: 'remoteAddress',
           data: remote
         }, remote.port, remote.address);
 
+        // 2
         this.send({
           type: 'peerlist',
           data: this.peers
         }, remote.port, remote.address);
 
+        // 3
         this.boardcast({
           type: 'sayhi',
           data: remote
         });
+
+        // 4
+        this.send({
+          type: 'blockchain',
+          data: JSON.stringify({
+            blockchain: blockchain.blockchain
+          })
+        }, remote.port, remote.address);
 
         this.peers.push(remote);
         break;
@@ -97,11 +111,16 @@ class P2p {
       case 'hi':
         console.log(`${remote.address}:${remote.port}: ${action.data}`);
         break;
+      case 'blockchain': {
+        let data = JSON.parse(action.data);
+        let newChain = data.blockchain;
+        this.replaceChain(newChain);
+        break;
+      }
       default:
         console.log('无此action.type!');
     }
   }  
-
   addPeers(newPeers) {
     newPeers.forEach(peer => {
       if (!this.peers.find(val => this.isEqualPeer(peer, val))) {
@@ -119,7 +138,24 @@ class P2p {
       this.send(action, peer.port, peer.address);
     });
   }
+
+  replaceChain(newChain) {
+    if (newChain) {
+      if (newChain.length === 1) {
+        return;
+      }
+
+      if (blockchain.isValidChain(newChain) && newChain.length > blockchain.blockchain.length) {
+        blockchain.blockchain = JSON.parse(JSON.stringify(newChain));
+      } else {
+        console.log('[错误]: 非法链');
+      }
+    }
+  }
 }
 
 
-module.exports = P2p;
+module.exports = {
+  P2p,
+  blockchain
+};

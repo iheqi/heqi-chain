@@ -1,8 +1,8 @@
 const vorpal = require('vorpal')();
-const Blockchain = require('./blockchain');
+// const Blockchain = require('./blockchain');
 const Table = require('cli-table');
 const rsa = require('./rsa');
-const P2p = require('./p2p');
+const { P2p, blockchain } = require('./p2p');
 
 function formatLog(data) {
   if (!data || data.length === 0) {
@@ -26,7 +26,7 @@ function formatLog(data) {
 }
 
 
-const blockchain = new Blockchain();
+// const blockchain = new Blockchain();
 const p2p = new P2p();
 p2p.init();
 
