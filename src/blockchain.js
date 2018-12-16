@@ -1,9 +1,10 @@
 const crypto = require('crypto');
 const rsa = require('./rsa');
+const dgram = require('dgram');
 
 const initBlock = {
   index: 0,
-  data: 'Hello heqi-chain!',  // pendingTransactions
+  data: 'Hello heqi-chain!', 
   prevHash: '0',
   timestamp: 1544792455313,
   nonce: 4250,
@@ -23,10 +24,73 @@ const initBlock = {
 class Blockchain {
   constructor () {
     this.blockchain = [initBlock];
-    this.data = [];
+    this.data = []; // pendingTransactions
     this.difficulty = 3;
     // const hash = this.computedHash(0, '0', Date.now(), 'Hello heqi-chain!', 1);
+
+    this.peers = [];
+    this.seed = { port: 8001, address: 'localhost' };
+    this.udp = dgram.createSocket('udp4');
+    this.init();
   }
+
+  init() {
+    this.bindP2p();
+    this.bindExit();
+  }
+
+  bindP2p() {
+    this.udp.on('message', (msg) => {
+
+    });
+    this.udp.on('message', (msg, rinfo) => {
+      console.log(`服务器收到：${msg} 来自 ${rinfo.port}`);
+      const action = JSON.parse(msg);
+
+      if (action.type) {
+        this.dispatch(action, rinfo);
+      }
+    });
+
+    this.udp.on('listening', () => {
+      const address = this.udp.address();
+      console.log(`服务器监听 ${address.address}: ${address.port}`);
+    });   
+    
+    const port = Number(process.argv[2] || 0);
+    this.startNode(port);
+  }
+
+  startNode(port) {
+    this.udp.bind(port);
+
+    if (port !== 8001) {
+      this.send({
+        type: 'newpeer'
+      }, this.seed.port, this.seed.address);
+    }
+  }
+
+  send(msg, port, address) {
+    this.udp.send(JSON.stringify(msg), port, address);
+  }
+
+  bindExit() {
+    process.on('exit', () => {
+      console.log('[信息]：网络一线牵，珍惜这段缘，再见！');
+    });
+  }
+
+  dispatch(action, remote) {
+    switch (action.type) {
+      case 'newpeer':
+        console.log('你好，新朋友！');
+        break;
+      default:
+        console.log('无此action.type!');
+    }
+  }
+
 
   getLastBlock() {
     return this.blockchain[this.blockchain.length - 1];
