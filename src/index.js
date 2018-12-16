@@ -2,6 +2,7 @@ const vorpal = require('vorpal')();
 const Blockchain = require('./blockchain');
 const Table = require('cli-table');
 const rsa = require('./rsa');
+const P2p = require('./p2p');
 
 function formatLog(data) {
   if (!Array.isArray(data)) {
@@ -23,6 +24,8 @@ function formatLog(data) {
 
 
 const blockchain = new Blockchain();
+const p2p = new P2p();
+p2p.init();
 
 vorpal.command('mine', '挖矿')
       .action(function(args, cb) {
