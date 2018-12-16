@@ -46,8 +46,12 @@ function sign({from, to, amount}) {
 
 // 公钥验证
 function verify({from, to, amount, signature}, pub) {
+  console.log(from, to, amount, signature);
+
   const keypairTemp = ec.keyFromPublic(pub, 'hex');
   // console.log(keypairTemp, 'keypairTemp', pub);
+  console.log(from, to, amount, signature, '2');
+
 
   const bufferMsg = Buffer.from(`${from}-${to}-${amount}`);
   return keypairTemp.verify(bufferMsg, signature);

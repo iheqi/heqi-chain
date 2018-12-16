@@ -1,25 +1,16 @@
 const crypto = require('crypto');
 const rsa = require('./rsa');
 const dgram = require('dgram');
+const Block = require('./block');
 
 const initBlock = {
   index: 0,
-  data: 'Hello heqi-chain!', 
+  transactions: 'Hello heqi-chain!', 
   prevHash: '0',
   timestamp: 1544792455313,
   nonce: 4250,
   hash: '00049946ecd84533d70ae601208c45aebcc0f6ef19482e55b46f131ddb1693f1'
 }
-
-// class Block {
-// 	constructor(timestamp, transactions, previousHash = '') {
-// 		this.previousHash = previousHash;
-// 		this.timestamp = timestamp;
-// 		this.transactions = transactions;
-// 		this.nonce = 0;
-// 		this.hash = this.calculateHash();
-//   }
-// }
 
 class Blockchain {
   constructor () {
@@ -105,24 +96,26 @@ class Blockchain {
       }
     }
     const transObj = { from, to, amount };
-    const sig = rsa.sign(transObj);
-    transObj.sig = sig;
+    transObj.signature = rsa.sign(transObj);;
     this.data.push(transObj);
     return transObj;
   }
 
   isVaildTrans(trans) {
-    return rsa.verify(trans, trans.from)
+    return trans.from === '0' ? true : rsa.verify(trans, trans.from);
   }
 
   mine(miningRewardAddress) {
+
     const newBlock = this.generateNewBlock();
 
     // if (!this.data.every(val => isVaildTrans(val))) {
     //   return false;
     // }
 
-    this.data = this.data.filter(val => isVaildTrans(val)); // 过滤不合法的2
+    // console.log(this.data, 'data')
+
+    this.data = this.data.filter(val => this.isVaildTrans(val)); // 过滤不合法的2
 
     if (this.isVaildBlock(newBlock) && this.isVaildChain()) {
       this.blockchain.push(newBlock);
@@ -133,11 +126,22 @@ class Blockchain {
       console.log('error, invalid block.');
     }
   }
+  generateNewBlock() {
+    // let nonce = 0;
+    const index = this.blockchain.length;
+    const data = this.data;
+    const prevHash = this.getLastBlock().hash;
+    // const timestamp = Date.now();
+
+    const newBlock = new Block(index, prevHash, data)
+    newBlock.mineBlock(this.difficulty);
+    return newBlock;
+  }  
 	getBalanceOfAddress(address) { // 查询余额
 		let blance = 0;
 		for (var i = 0; i < this.blockchain.length; i++) {
       const block = this.blockchain[i];
-			for (const trans of block.data) {
+			for (const trans of block.transactions) {
 				if (address === trans.to) {
 					blance += trans.amount;
 				}				
@@ -148,45 +152,18 @@ class Blockchain {
 		}
 		return blance;
 	}
-  generateNewBlock() {
-    let nonce = 0;
-    const index = this.blockchain.length;
-    const data = this.data;
-    const prevHash = this.getLastBlock().hash;
-    const timestamp = Date.now();
-    let hash = this.computedHash(index, prevHash, timestamp, data, nonce);
 
-    while (hash.substring(0, this.difficulty) !== '0'.repeat(this.difficulty)) {
-      nonce++;
-      hash = this.computedHash(index, prevHash, timestamp, data, nonce);
-    }
-
-    return {
-      hash,
-      nonce,
-      timestamp,
-      prevHash,
-      data,
-      index
-    }
-  }
-
-  computedHashForBlock({index, prevHash, timestamp, data, nonce}) {
-    return this.computedHash(index, prevHash, timestamp, data, nonce);
-  }
-
-  computedHash(index, prevHash, timestamp, data, nonce) {
-    return crypto.createHash('sha256')
-                 .update(index + prevHash + timestamp + data + nonce)
-                 .digest('hex');
-  }
-
+  // computedHashForBlock({index, prevHash, timestamp, data, nonce}) {
+  //   return this.computedHash(index, prevHash, timestamp, data, nonce);
+  // }
   isVaildBlock(newBlock, lastBlock=this.getLastBlock()) { // 这里还要验证？fuck，本来就是这样来的
     if (newBlock.index !== lastBlock.index + 1 ||
         newBlock.timestamp <= lastBlock.timestamp ||
         newBlock.prevHash !== lastBlock.hash ||
         newBlock.hash.substring(0, this.difficulty) !== '0'.repeat(this.difficulty) ||
-        newBlock.hash !== this.computedHashForBlock(newBlock)
+        // newBlock.hash !== this.computedHashForBlock(newBlock)
+        newBlock.hash !== newBlock.computedHash(newBlock)
+
     ) {
       return false;
     }
