@@ -17,11 +17,7 @@ class Blockchain {
     this.data = []; // pendingTransactions
     this.difficulty = 3;
     // const hash = this.computedHash(0, '0', Date.now(), 'Hello heqi-chain!', 1);
-
-
   }
-
-
 
   getLastBlock() {
     return this.blockchain[this.blockchain.length - 1];
@@ -46,7 +42,6 @@ class Blockchain {
   }
 
   mine(miningRewardAddress) {
-
     const newBlock = this.generateNewBlock();
 
     // if (!this.data.every(val => isVaildTrans(val))) {

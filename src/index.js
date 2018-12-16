@@ -5,6 +5,9 @@ const rsa = require('./rsa');
 const P2p = require('./p2p');
 
 function formatLog(data) {
+  if (!data || data.length === 0) {
+    return;
+  }
   if (!Array.isArray(data)) {
     data = [data];
   }
@@ -36,7 +39,7 @@ vorpal.command('mine', '挖矿')
         cb();
       });
 
-vorpal.command('chain', '查看区块链')
+vorpal.command('blockchain', '查看区块链')
       .action(function(args, cb) {
         formatLog(blockchain.blockchain);
         cb();
@@ -71,6 +74,22 @@ vorpal.command('pub', '查看本地公钥')
         console.log(rsa.keys.pub);
         cb();
       });  
+
+vorpal.command('chat <msg>', '广播聊天')
+      .action(function(args, cb) {
+        p2p.boardcast({
+          type: 'hi',
+          data: args.msg
+        });
+        cb();
+      });
+
+vorpal.command('peers', '查看所有节点')
+      .action(function(args, cb) {
+        formatLog(p2p.peers);
+        cb();
+      });    
+
 vorpal.delimiter("heqi-chain =>")
 .show();      
 

@@ -40,6 +40,8 @@ class P2p {
         type: 'newpeer',
         data: 'Hi,种子,我是新节点！'
       }, this.seed.port, this.seed.address);
+
+      this.peers.push(this.seed);
     }
   }
 
@@ -86,14 +88,14 @@ class P2p {
       case 'sayhi': {
         const remote = action.data;
         this.peers.push(remote);
-        // console.log(`我是${this.remote.address}:${this.remote.port},欢迎新节点!`);
         this.send({
-          type: 'hi'
+          type: 'hi',
+          data: 'Hi'
         }, remote.port, remote.address);
         break;
       }  
       case 'hi':
-        console.log(`${remote.address}:${remote.port}: Hi`);
+        console.log(`${remote.address}:${remote.port}: ${action.data}`);
         break;
       default:
         console.log('无此action.type!');
