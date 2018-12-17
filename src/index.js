@@ -33,6 +33,13 @@ p2p.init();
 vorpal.command('mine', '挖矿')
       .action(function(args, cb) {
         const newBlock = blockchain.mine(rsa.keys.pub);
+        p2p.boardcast({
+          type: 'mine',
+          data: {
+            newBlock,
+            remote: p2p.remote
+          }
+        });
         if (newBlock) {
           formatLog(newBlock);
         }

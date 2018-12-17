@@ -18,7 +18,7 @@ class P2p {
 
   bindP2p() {
     this.udp.on('message', (msg, remote) => {
-      console.log(`${remote.address}:${remote.port}: ${msg}`);
+      // console.log(`${remote.address}:${remote.port}: ${msg}`);
       const action = JSON.parse(msg);
 
       if (action.type) {
@@ -45,6 +45,8 @@ class P2p {
       }, this.seed.port, this.seed.address);
 
       this.peers.push(this.seed);
+    } else {
+      this.remote = this.seed;
     }
   }
 
@@ -115,6 +117,31 @@ class P2p {
         let data = JSON.parse(action.data);
         let newChain = data.blockchain;
         this.replaceChain(newChain);
+        break;
+      }
+      case 'mine': {
+        const newBlock = action.data.newBlock;
+        const lastBlock = blockchain.getLastBlock();
+        if (lastBlock.hash === newBlock.hash) { // 处理泛洪， 停止
+          console.log('重复的消息');
+          return;
+        } 
+
+        if (blockchain.isValidBlock(newBlock, lastBlock)) {
+          console.log(action, action.data, action.remote);
+          console.log(`[信息]：${action.data.remote.port}挖矿成功了`);
+          blockchain.blockchain.push(newBlock);
+          blockchain.transactions = [];
+          this.boardcast({ // 泛洪
+            type: 'mine',
+            data: {
+              newBlock,
+              remote: action.data.remote
+            }
+          });          
+        } else {
+          console.log('[消息]: 区块不合法');
+        }
         break;
       }
       default:
