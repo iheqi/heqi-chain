@@ -4,15 +4,15 @@ const Block = require('./block');
 
 const initBlock = {
   index: 0,
-  transactions: 'Hello heqi-chain!', 
+  transactions: 'Hello heqi-chain!',
   prevHash: '0',
   timestamp: 1544792455313,
   nonce: 4250,
   hash: '00049946ecd84533d70ae601208c45aebcc0f6ef19482e55b46f131ddb1693f1'
-}
+};
 
 class Blockchain {
-  constructor () {
+  constructor() {
     this.blockchain = [initBlock];
     this.transactions = []; // pendingTransactions
     this.difficulty = 3;
@@ -33,7 +33,7 @@ class Blockchain {
 
     const timestamp = Date.now();
     const transObj = { from, to, amount, timestamp };
-    transObj.signature = rsa.sign(transObj);;
+    transObj.signature = rsa.sign(transObj);
     this.transactions.push(transObj);
     return transObj;
   }
@@ -74,27 +74,27 @@ class Blockchain {
     const prevHash = this.getLastBlock().hash;
     // const timestamp = Date.now();
 
-    const newBlock = new Block(index, prevHash, transactions)
+    const newBlock = new Block(index, prevHash, transactions);
     newBlock.mineBlock(this.difficulty);
     return newBlock;
-  }  
-	getBalanceOfAddress(address) { // 查询余额
-		let blance = 0;
-		for (var i = 0; i < this.blockchain.length; i++) {
+  }
+  getBalanceOfAddress(address) { // 查询余额
+    let blance = 0;
+    for (var i = 0; i < this.blockchain.length; i++) {
       const block = this.blockchain[i];
-			for (const trans of block.transactions) {
-				if (address === trans.to) {
-					blance += trans.amount;
-				}				
-				if (address === trans.from) {
-					blance -= trans.amount;
-				}
-			}
-		}
-		return blance;
-	}
+      for (const trans of block.transactions) {
+        if (address === trans.to) {
+          blance += trans.amount;
+        }
+        if (address === trans.from) {
+          blance -= trans.amount;
+        }
+      }
+    }
+    return blance;
+  }
 
-  isValidBlock(newBlock, lastBlock=this.getLastBlock()) { // 这里还要验证？fuck，本来就是这样来的
+  isValidBlock(newBlock, lastBlock = this.getLastBlock()) { // 这里还要验证？fuck，本来就是这样来的
     if (newBlock.index === 0) {
       return true;
     }
@@ -109,13 +109,13 @@ class Blockchain {
     return true;
   }
 
-  computedHash({index, prevHash, timestamp, data, nonce}) {
+  computedHash({ index, prevHash, timestamp, data, nonce }) {
     return crypto.createHash('sha256')
-                 .update(index + prevHash + timestamp + data + nonce)
-                 .digest('hex');
+      .update(index + prevHash + timestamp + data + nonce)
+      .digest('hex');
   }
 
-  isValidChain(chain=this.blockchain) {
+  isValidChain(chain = this.blockchain) {
     for (let i = 2; i < chain.length; i++) {
       const currentBlock = chain[i];
       const previousBlock = chain[i - 1];

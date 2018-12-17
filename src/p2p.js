@@ -22,15 +22,15 @@ class P2p {
       const action = JSON.parse(msg);
 
       if (action.type) {
-        this.dispatch(action, remote);  
+        this.dispatch(action, remote);
       }
     });
 
     this.udp.on('listening', () => {
       const address = this.udp.address();
       console.log(`服务器监听 ${address.address}: ${address.port}`);
-    });   
-    
+    });
+
     const port = Number(process.argv[2] || 0);
     this.startNode(port);
   }
@@ -110,7 +110,7 @@ class P2p {
           data: 'Hi'
         }, remote.port, remote.address);
         break;
-      }  
+      }
       case 'hi':
         console.log(`${remote.address}:${remote.port}: ${action.data}`);
         break;
@@ -126,7 +126,7 @@ class P2p {
         if (lastBlock.hash === newBlock.hash) { // 处理泛洪， 停止
           console.log('重复的消息');
           return;
-        } 
+        }
 
         if (blockchain.isValidBlock(newBlock, lastBlock)) {
           console.log(action, action.data, action.remote);
@@ -139,7 +139,7 @@ class P2p {
               newBlock,
               remote: action.data.remote
             }
-          });          
+          });
         } else {
           console.log('[消息]: 区块不合法');
         }
@@ -163,7 +163,7 @@ class P2p {
       default:
         console.log('无此action.type!');
     }
-  }  
+  }
   addPeers(newPeers) {
     newPeers.forEach(peer => {
       if (!this.peers.find(val => this.isEqual(peer, val))) {
@@ -180,7 +180,7 @@ class P2p {
     const keys1 = Object.keys(obj1);
     const keys2 = Object.keys(obj2);
 
-    if (keys1.length != keys2.length) {
+    if (keys1.length !== keys2.length) {
       return false;
     }
 
@@ -213,7 +213,6 @@ class P2p {
     }
   }
 }
-
 
 module.exports = {
   P2p,

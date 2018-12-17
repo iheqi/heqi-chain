@@ -1,6 +1,6 @@
 var fs = require('fs');
 var EC = require('elliptic').ec;
- 
+
 // Create and initialize EC context
 // (better do it once and reuse it)
 var ec = new EC('secp256k1');
@@ -23,13 +23,12 @@ function generateKeys() {
     } else {
       console.log('验证失败！');
     }
-
   } catch (error) {
     // 文件不存在或者非法，则重新生成
     const res = {
       prv: keypair.getPrivate('hex').toString(),
       pub: keypair.getPublic('hex').toString()
-    }
+    };
 
     fs.writeFileSync(fileName, JSON.stringify(res));
     return res;
@@ -38,36 +37,35 @@ function generateKeys() {
 
 // 私钥签名
 
-function sign({from, to, amount, timestamp}) {
+function sign({ from, to, amount, timestamp }) {
   const bufferMsg = Buffer.from(`${from}-${to}-${amount}-${timestamp}`);
   let signature = Buffer.from(keypair.sign(bufferMsg).toDER()).toString('hex');
   return signature;
 }
 
 // 公钥验证
-function verify({from, to, amount, signature, timestamp}, pub) {
+function verify({ from, to, amount, signature, timestamp }, pub) {
   console.log(from, to, amount, signature);
 
   const keypairTemp = ec.keyFromPublic(pub, 'hex');
   // console.log(keypairTemp, 'keypairTemp', pub);
   console.log(from, to, amount, signature, '2');
 
-
   const bufferMsg = Buffer.from(`${from}-${to}-${amount}-${timestamp}`);
   return keypairTemp.verify(bufferMsg, signature);
 }
 
-const trans = { 
-  from: 'heqi', 
-  to: 'ceido', 
-  amount: 100 
-};
+// const trans = {
+//   from: 'heqi',
+//   to: 'ceido',
+//   amount: 100
+// }
 
-const transFalse = { 
-  from: 'heqi1', 
-  to: 'ceido', 
-  amount: 100 
-};
+// const transFalse = {
+//   from: 'heqi1',
+//   to: 'ceido',
+//   amount: 100
+// }
 
 const keys = generateKeys();
 
@@ -75,7 +73,7 @@ module.exports = {
   sign,
   verify,
   keys
-}
+};
 
 // const signature = sign(trans);
 // trans.signature = signature;

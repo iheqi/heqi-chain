@@ -1,7 +1,7 @@
 const dgram = require('dgram');
 const udp = dgram.createSocket('udp4');
 
-udp.on('error', () => {
+udp.on('error', (err) => {
   console.log(`服务器异常：\n${err.stack}`);
 });
 
