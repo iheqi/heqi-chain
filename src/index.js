@@ -32,7 +32,7 @@ p2p.init();
 
 vorpal.command('mine', '挖矿')
       .action(function(args, cb) {
-        const newBlock = blockchain.mine(rsa.keys.pub);
+        const newBlock = blockchain.mine();
         p2p.boardcast({
           type: 'mine',
           data: {
@@ -40,6 +40,14 @@ vorpal.command('mine', '挖矿')
             remote: p2p.remote
           }
         });
+
+        // 矿工奖励,视频是先加奖励了再清空，错了。这个奖励也要广播交易
+        const trans = blockchain.transfer('0', rsa.keys.pub, 20); 
+        p2p.boardcast({ 
+          type: 'trans',
+          data: trans
+        }); 
+
         if (newBlock) {
           formatLog(newBlock);
         }
@@ -59,6 +67,10 @@ vorpal.command('trans <to> <amount>', '转账')
         if (trans) {
           formatLog(trans);
         }
+        p2p.boardcast({
+          type: 'trans',
+          data: trans
+        });
         cb();
       })
 
@@ -97,6 +109,11 @@ vorpal.command('peers', '查看所有节点')
         cb();
       });    
 
+vorpal.command('pending', '查看未被打包的交易')
+      .action(function(args, cb) {
+        formatLog(blockchain.transactions);
+        cb();
+      });   
 vorpal.delimiter("heqi-chain =>")
 .show();      
 

@@ -18,7 +18,7 @@ class P2p {
 
   bindP2p() {
     this.udp.on('message', (msg, remote) => {
-      // console.log(`${remote.address}:${remote.port}: ${msg}`);
+      console.log(`${remote.address}:${remote.port}: ${msg}`);
       const action = JSON.parse(msg);
 
       if (action.type) {
@@ -85,7 +85,8 @@ class P2p {
         this.send({
           type: 'blockchain',
           data: JSON.stringify({
-            blockchain: blockchain.blockchain
+            blockchain: blockchain.blockchain,
+            trans: blockchain.transactions
           })
         }, remote.port, remote.address);
 
@@ -115,8 +116,8 @@ class P2p {
         break;
       case 'blockchain': {
         let data = JSON.parse(action.data);
-        let newChain = data.blockchain;
-        this.replaceChain(newChain);
+        this.replaceChain(data.blockchain);
+        this.replaceTrans(data.trans);
         break;
       }
       case 'mine': {
@@ -144,20 +145,46 @@ class P2p {
         }
         break;
       }
+
+      case 'trans': { // 收到交易请求
+        const trans = action.data;
+
+        console.log('收到交易广播', blockchain.transactions.find(v => this.isEqual(v, trans)));
+        if (!blockchain.transactions.find(v => this.isEqual(v, trans))) { // 处理泛洪
+          console.log(`收到交易广播: ${trans.from}-${trans.to}-${trans.amount}`);
+          blockchain.addTrans(trans);
+          this.boardcast({
+            type: 'trans',
+            data: trans
+          });
+        }
+        break;
+      }
       default:
         console.log('无此action.type!');
     }
   }  
   addPeers(newPeers) {
     newPeers.forEach(peer => {
-      if (!this.peers.find(val => this.isEqualPeer(peer, val))) {
+      if (!this.peers.find(val => this.isEqual(peer, val))) {
         this.peers.push(peer);
       }
     });
   }
 
-  isEqualPeer(p1, p2) {
-    return p1.address === p2.address && p2.port === p2.port;
+  // isEqualPeer(p1, p2) {
+  //   return p1.address === p2.address && p2.port === p2.port;
+  // }
+
+  isEqual(obj1, obj2) {
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length != keys2.length) {
+      return false;
+    }
+
+    return keys1.every(key => obj1[key] === obj2[key]);
   }
 
   boardcast(action) {
@@ -177,6 +204,12 @@ class P2p {
       } else {
         console.log('[错误]: 非法链');
       }
+    }
+  }
+
+  replaceTrans(trans) {
+    if (trans.every(v => blockchain.isValidTrans(v))) {
+      blockchain.transactions = trans;
     }
   }
 }

@@ -38,14 +38,14 @@ function generateKeys() {
 
 // 私钥签名
 
-function sign({from, to, amount}) {
-  const bufferMsg = Buffer.from(`${from}-${to}-${amount}`);
+function sign({from, to, amount, timestamp}) {
+  const bufferMsg = Buffer.from(`${from}-${to}-${amount}-${timestamp}`);
   let signature = Buffer.from(keypair.sign(bufferMsg).toDER()).toString('hex');
   return signature;
 }
 
 // 公钥验证
-function verify({from, to, amount, signature}, pub) {
+function verify({from, to, amount, signature, timestamp}, pub) {
   console.log(from, to, amount, signature);
 
   const keypairTemp = ec.keyFromPublic(pub, 'hex');
@@ -53,7 +53,7 @@ function verify({from, to, amount, signature}, pub) {
   console.log(from, to, amount, signature, '2');
 
 
-  const bufferMsg = Buffer.from(`${from}-${to}-${amount}`);
+  const bufferMsg = Buffer.from(`${from}-${to}-${amount}-${timestamp}`);
   return keypairTemp.verify(bufferMsg, signature);
 }
 

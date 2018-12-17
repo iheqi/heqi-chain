@@ -30,7 +30,9 @@ class Blockchain {
         return false;
       }
     }
-    const transObj = { from, to, amount };
+
+    const timestamp = Date.now();
+    const transObj = { from, to, amount, timestamp };
     transObj.signature = rsa.sign(transObj);;
     this.transactions.push(transObj);
     return transObj;
@@ -40,7 +42,14 @@ class Blockchain {
     return trans.from === '0' ? true : rsa.verify(trans, trans.from);
   }
 
-  mine(miningRewardAddress) {
+  addTrans(trans) {
+    // consolo.log('交易合法?', this.isValidTrans(trans));
+    if (this.isValidTrans(trans)) {
+      this.transactions.push(trans);
+    }
+  }
+
+  mine() {
     const newBlock = this.generateNewBlock();
 
     // if (!this.data.every(val => isValidTrans(val))) {
@@ -53,7 +62,6 @@ class Blockchain {
     if (this.isValidBlock(newBlock) && this.isValidChain()) {
       this.blockchain.push(newBlock);
       this.transactions = [];
-      this.transfer('0', miningRewardAddress, 20); // 矿工奖励,视频是先加奖励了再清空，错了
       return newBlock;
     } else {
       console.log('error, invalid block.');
